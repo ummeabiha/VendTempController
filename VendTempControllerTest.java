@@ -1,132 +1,86 @@
+import java.util.Scanner;
+
 public class VendTempControllerTest {
+    public static VendTempController controller = new VendTempController();
+
+    public static void promptEnter() {
+        System.out.print("\nPress \"ENTER\" to continue...");
+        Scanner scanner = new Scanner(System.in);
+        scanner.nextLine();
+    }
+
     public static void main(String[] args) {
-        testSetInitialTemp();
-        testRequestChange();
-        testRingAlarmCase();
-        testIncreaseTempCase();
-        testDecreaseTempCase();
-        testDoNothingCase();}
+        System.out.println("--------------- VEND TEMP CONTROLLER ---------------");
+        int choice = 1;
+        Scanner sc = new Scanner(System.in);
 
-    private static void testSetInitialTemp() {
-        VendTempController controller = new VendTempController();
-        System.out.println("Testing setInitialTemp:");
-        try {
-            // Valid initial temperature
-            controller.setInitialTemp(5);
-            System.out.println("Initial Temperature Set: " + controller.getCurrentTemp());
-            // Invalid initial temperature (out of range)
-            controller.setInitialTemp(10);
-            System.out.println("Initial Temperature Set (Invalid): " + controller.getCurrentTemp());
-        } catch (Exception e) {
-            System.out.println("An error occurred: " + e.getMessage());
-        }
-    }
+        while (choice != 5) {
+            try {
+                System.out.print("\nEnter a valid choice:\n" +
+                        "1. Increment Temperature.\n" +
+                        "2. Decrement Temperature.\n" +
+                        "3. Alarm Activation.\n" +
+                        "4. Display Current Temperature.\n" +
+                        "5. Exit.\n");
 
-    private static void testRequestChange() {
-        VendTempController controller = new VendTempController();
-        System.out.println("\nTesting requestChange:");
-        try {
-            // Valid change request (increase temperature)
-            controller.setInitialTemp(5);
-            Signal signal = controller.requestChange(7);
-            System.out.println("Signal for Increasing Temperature: " + signal);
-            // Valid change request (decrease temperature)
-            signal = controller.requestChange(3);
-            System.out.println("Signal for Decreasing Temperature: " + signal);
-            // Valid change request (alarm signal)
-            Signal alarmSignal = controller.requestChange(0);
-            if (alarmSignal == null) {
-                System.out.println("Signal for Ring Alarm: RING_ALARM");
+                choice = sc.nextInt();
+
+                switch (choice) {
+                    case 1: {
+                        try {
+                            VendTempController.Signal tempInc = controller.IncreaseTemp();
+                            if (tempInc == VendTempController.Signal.INCREASE_TEMP) {
+                                System.out.println("Temperature increased to " + controller.getCurrentTemp() + " Celsius");
+                            }
+                        } catch (Exception e) {
+                            System.out.println("Invalid Input: " + e.getMessage());
+                        }
+                        break;
+                    }
+
+                    case 2: {
+                        try {
+                            VendTempController.Signal tempDec = controller.DecreaseTemp();
+                            if (tempDec == VendTempController.Signal.DECREASE_TEMP) {
+                                System.out.println("Temperature decreased to " + controller.getCurrentTemp() + " Celsius");
+                            }
+                        } catch (Exception e) {
+                            System.out.println("Invalid Input: " + e.getMessage());
+                        }
+                        break;
+                    }
+                    case 3: {
+                        try {
+                            VendTempController.Signal alarm = controller.alarmActivation();
+                            if (alarm == VendTempController.Signal.RING_ALARM) {
+                                System.out.println("Alarm is Activated. Setting the Temperature to 2 Celsius.");
+                            }
+                        } catch (Exception e) {
+                            System.out.println("Invalid Input: " + e.getMessage());
+                        }
+                        break;
+                    }
+                    case 4: {
+                        try {
+                            System.out.println("Current Temperature: " + controller.getCurrentTemp() + " Celsius.\n");
+                        } catch (Exception e) {
+                            System.out.println("Invalid Input: " + e.getMessage());
+                        }
+                        break;
+                    }
+                    case 5: {
+                        break;
+                    }
+                    default: {
+                        System.out.println("Invalid Selection.");
+                        promptEnter();
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("Invalid Input: " + e.getMessage());
+                sc.nextLine(); 
             }
-            // No change request (same temperature)
-            signal = controller.requestChange(5);
-            System.out.println("Signal for no change in temperature: " + signal);
-        } catch (Exception e) {
-            System.out.println("An error occurred: " + e.getMessage());
         }
-    }
-
-    private static void testRingAlarmCase() {
-        VendTempController controller = new VendTempController();
-        System.out.println("\nTesting Ring Alarm Case:");
-        try {
-            Signal alarmSignal = controller.requestChange(0);
-            controller.PrintSignals();
-            System.out.println("Current Temperature: " + controller.getCurrentTemp());
-
-            if (alarmSignal == Signal.RING_ALARM && controller.getRequestedTemp() == null) {
-                System.out.println(
-                        "Requested Temperature: Temperature exceeds the allowable range (2-8). The alarm is now ringing.");
-            } else {
-                System.out.println("Requested Temperature: " + controller.getRequestedTemp());
-            }
-            System.out.println();
-        } catch (Exception e) {
-            System.out.println("An error occurred: " + e.getMessage());
-        }
-    }
-
-    private static void testIncreaseTempCase() {
-        VendTempController controller = new VendTempController();
-        System.out.println("Testing Increase Temperature Case:");
-        try {
-            controller.setInitialTemp(5);
-            Signal increaseSignal = controller.requestChange(7);
-            controller.PrintSignals();
-            System.out.println("Current Temperature: " + controller.getCurrentTemp());
-
-            if (increaseSignal == Signal.INCREASE_TEMP) {
-                System.out.println("Requested Temperature: Temperature is increasing. New temperature is "
-                        + controller.getRequestedTemp());
-            } else {
-                System.out.println("Requested Temperature: " + controller.getRequestedTemp());
-            }
-            System.out.println();
-        } catch (Exception e) {
-            System.out.println("An error occurred: " + e.getMessage());
-        }
-    }
-
-    private static void testDecreaseTempCase() {
-        VendTempController controller = new VendTempController();
-        System.out.println("Testing Decrease Temperature Case:");
-        try {
-            controller.setInitialTemp(5);
-            Signal decreaseSignal = controller.requestChange(3);
-            controller.PrintSignals();
-            System.out.println("Current Temperature: " + controller.getCurrentTemp());
-
-            if (decreaseSignal == Signal.RING_ALARM && controller.getRequestedTemp() == null) {
-                System.out.println(
-                        "Requested Temperature: Temperature is below the allowable range (2-8). The alarm is now ringing.");
-            } else {
-                System.out.println("Requested Temperature: Temperature is decreasing. New temperature is "
-                        + controller.getRequestedTemp());
-            }
-            System.out.println();
-        } catch (Exception e) {
-            System.out.println("An error occurred: " + e.getMessage());
-        }
-    }
-
-    private static void testDoNothingCase() {
-        VendTempController controller = new VendTempController();
-        System.out.println("Testing Do Nothing Case:");
-        try {
-            controller.setInitialTemp(4);
-            Signal doNothingSignal = controller.requestChange(4);
-            controller.PrintSignals();
-            System.out.println("Current Temperature: " + controller.getCurrentTemp());
-
-            if (doNothingSignal == Signal.RING_ALARM && controller.getRequestedTemp() == null) {
-                System.out.println(
-                        "Requested Temperature: Temperature is below the allowable range (2-8). The alarm is now ringing.");
-            } else {
-                System.out.println("Requested Temperature: " + controller.getRequestedTemp());
-            }
-            System.out.println();
-        } catch (Exception e) {
-            System.out.println("An error occurred: " + e.getMessage());
-        }
+        System.out.print("Exiting...");
     }
 }
